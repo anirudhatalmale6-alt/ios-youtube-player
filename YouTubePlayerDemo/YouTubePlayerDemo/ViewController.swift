@@ -5,6 +5,8 @@
 //  Sample view controller demonstrating the protected YouTube player
 //  with quality and speed controls
 //
+//  Compatible with iOS 12.0+
+//
 
 import UIKit
 
@@ -60,10 +62,68 @@ class ViewController: UIViewController {
         setupUI()
     }
 
+    // MARK: - iOS Version Compatible Colors
+
+    private var backgroundColor: UIColor {
+        if #available(iOS 13.0, *) {
+            return .systemBackground
+        } else {
+            return .white
+        }
+    }
+
+    private var secondaryLabelColor: UIColor {
+        if #available(iOS 13.0, *) {
+            return .secondaryLabel
+        } else {
+            return .darkGray
+        }
+    }
+
+    private var grayButtonColor: UIColor {
+        if #available(iOS 13.0, *) {
+            return .systemGray6
+        } else {
+            return UIColor(white: 0.95, alpha: 1.0)
+        }
+    }
+
+    private var greenColor: UIColor {
+        if #available(iOS 13.0, *) {
+            return .systemGreen
+        } else {
+            return UIColor(red: 0.2, green: 0.78, blue: 0.35, alpha: 1.0)
+        }
+    }
+
+    private var blueColor: UIColor {
+        if #available(iOS 13.0, *) {
+            return .systemBlue
+        } else {
+            return UIColor(red: 0.0, green: 0.48, blue: 1.0, alpha: 1.0)
+        }
+    }
+
+    private var orangeColor: UIColor {
+        if #available(iOS 13.0, *) {
+            return .systemOrange
+        } else {
+            return UIColor(red: 1.0, green: 0.58, blue: 0.0, alpha: 1.0)
+        }
+    }
+
+    private var redColor: UIColor {
+        if #available(iOS 13.0, *) {
+            return .systemRed
+        } else {
+            return .red
+        }
+    }
+
     // MARK: - Setup
 
     private func setupUI() {
-        view.backgroundColor = UIColor.systemBackground
+        view.backgroundColor = backgroundColor
 
         // Title
         let titleLabel = UILabel()
@@ -115,7 +175,7 @@ class ViewController: UIViewController {
         statusLabel = UILabel()
         statusLabel.text = "Status: Not loaded"
         statusLabel.font = .systemFont(ofSize: 14)
-        statusLabel.textColor = .secondaryLabel
+        statusLabel.textColor = secondaryLabelColor
         statusLabel.textAlignment = .center
         statusLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(statusLabel)
@@ -124,7 +184,7 @@ class ViewController: UIViewController {
         timeLabel = UILabel()
         timeLabel.text = "Time: 0:00"
         timeLabel.font = .monospacedDigitSystemFont(ofSize: 14, weight: .regular)
-        timeLabel.textColor = .secondaryLabel
+        timeLabel.textColor = secondaryLabelColor
         timeLabel.textAlignment = .center
         timeLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(timeLabel)
@@ -133,7 +193,7 @@ class ViewController: UIViewController {
         let samplesLabel = UILabel()
         samplesLabel.text = "Sample Videos:"
         samplesLabel.font = .systemFont(ofSize: 14, weight: .medium)
-        samplesLabel.textColor = .secondaryLabel
+        samplesLabel.textColor = secondaryLabelColor
         samplesLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(samplesLabel)
 
@@ -145,7 +205,7 @@ class ViewController: UIViewController {
         let infoLabel = UILabel()
         infoLabel.text = "✓ No redirects  ✓ No copy link  ✓ No share"
         infoLabel.font = .systemFont(ofSize: 12)
-        infoLabel.textColor = .systemGreen
+        infoLabel.textColor = greenColor
         infoLabel.numberOfLines = 0
         infoLabel.textAlignment = .center
         infoLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -219,8 +279,8 @@ class ViewController: UIViewController {
         qualityButton = UIButton(type: .system)
         qualityButton.setTitle("Quality: Auto ▼", for: .normal)
         qualityButton.titleLabel?.font = .systemFont(ofSize: 13, weight: .medium)
-        qualityButton.backgroundColor = .systemBlue.withAlphaComponent(0.1)
-        qualityButton.setTitleColor(.systemBlue, for: .normal)
+        qualityButton.backgroundColor = blueColor.withAlphaComponent(0.1)
+        qualityButton.setTitleColor(blueColor, for: .normal)
         qualityButton.layer.cornerRadius = 8
         qualityButton.contentEdgeInsets = UIEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
         qualityButton.addTarget(self, action: #selector(qualityTapped), for: .touchUpInside)
@@ -229,8 +289,8 @@ class ViewController: UIViewController {
         speedButton = UIButton(type: .system)
         speedButton.setTitle("Speed: 1x ▼", for: .normal)
         speedButton.titleLabel?.font = .systemFont(ofSize: 13, weight: .medium)
-        speedButton.backgroundColor = .systemOrange.withAlphaComponent(0.1)
-        speedButton.setTitleColor(.systemOrange, for: .normal)
+        speedButton.backgroundColor = orangeColor.withAlphaComponent(0.1)
+        speedButton.setTitleColor(orangeColor, for: .normal)
         speedButton.layer.cornerRadius = 8
         speedButton.contentEdgeInsets = UIEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
         speedButton.addTarget(self, action: #selector(speedTapped), for: .touchUpInside)
@@ -264,7 +324,7 @@ class ViewController: UIViewController {
         let button = UIButton(type: .system)
         button.setTitle(title, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 13, weight: .medium)
-        button.backgroundColor = .systemGray6
+        button.backgroundColor = grayButtonColor
         button.layer.cornerRadius = 8
         button.contentEdgeInsets = UIEdgeInsets(top: 8, left: 14, bottom: 8, right: 14)
         button.addTarget(self, action: action, for: .touchUpInside)
@@ -389,11 +449,11 @@ extension ViewController: YouTubePlayerViewDelegate {
 
     func playerReady(_ playerView: YouTubePlayerView) {
         statusLabel.text = "Status: Ready"
-        statusLabel.textColor = .secondaryLabel
+        statusLabel.textColor = secondaryLabelColor
     }
 
     func player(_ playerView: YouTubePlayerView, didChangeStateTo state: YouTubePlayerState) {
-        statusLabel.textColor = .secondaryLabel
+        statusLabel.textColor = secondaryLabelColor
         switch state {
         case .unstarted:
             statusLabel.text = "Status: Unstarted"
@@ -429,6 +489,6 @@ extension ViewController: YouTubePlayerViewDelegate {
             errorMessage += "Unknown error"
         }
         statusLabel.text = errorMessage
-        statusLabel.textColor = .systemRed
+        statusLabel.textColor = redColor
     }
 }
