@@ -1,10 +1,16 @@
 //
 //  YouTubePlayerView.swift
-//  YouTubePlayer
+//  YouTubePlayerDemo
 //
 //  A self-contained UIView subclass that plays YouTube videos in-app
 //  using WKWebView and the YouTube IFrame Player API.
-//  No redirects to YouTube app or Safari.
+//
+//  SECURITY FEATURES:
+//  - No redirects to YouTube app or Safari
+//  - No copy link functionality
+//  - No share button
+//  - No text selection
+//  - No context menu (long press)
 //
 //  Swift 5 | iOS 12.0+
 //
@@ -73,6 +79,7 @@ public enum YouTubePlayerError: Int {
 
 /// A UIView subclass that embeds a YouTube player using WKWebView and IFrame API.
 /// All playback occurs within the app - no redirects to YouTube app or Safari.
+/// Link copying and sharing are disabled for content protection.
 public class YouTubePlayerView: UIView {
 
     // MARK: - Properties
@@ -119,6 +126,13 @@ public class YouTubePlayerView: UIView {
         config.allowsInlineMediaPlayback = true
         config.mediaTypesRequiringUserActionForPlayback = []
 
+        // Disable link preview and data detection for security
+        let preferences = WKWebpagePreferences()
+        if #available(iOS 14.0, *) {
+            preferences.allowsContentJavaScript = true
+        }
+        config.defaultWebpagePreferences = preferences
+
         // Create web view
         webView = WKWebView(frame: bounds, configuration: config)
         webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
@@ -127,8 +141,16 @@ public class YouTubePlayerView: UIView {
         webView.isOpaque = false
         webView.backgroundColor = .black
 
+        // Disable link previews (3D Touch / Haptic Touch)
+        if #available(iOS 13.0, *) {
+            webView.allowsLinkPreview = false
+        }
+
         // Set navigation delegate to intercept external links
         webView.navigationDelegate = self
+
+        // Set UI delegate to block context menus
+        webView.uiDelegate = self
 
         // Add message handler for JavaScript callbacks
         webView.configuration.userContentController.add(LeakAvoider(delegate: self), name: "youtubePlayer")
@@ -228,7 +250,7 @@ public class YouTubePlayerView: UIView {
         }
     }
 
-    /// Load a new video and start playing
+    /// Load a new video (cue without playing)
     /// - Parameter videoId: The YouTube video ID
     public func cueVideo(videoId: String) {
         currentVideoId = videoId
@@ -289,6 +311,7 @@ public class YouTubePlayerView: UIView {
             "rel": 0,
             "modestbranding": 1,
             "fs": 0,  // Disable YouTube's native fullscreen (we handle it ourselves)
+            "disablekb": 0,
             "origin": "https://www.youtube.com"
         ]
 
@@ -306,17 +329,142 @@ public class YouTubePlayerView: UIView {
         <head>
             <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
             <style>
-                * { margin: 0; padding: 0; box-sizing: border-box; }
-                html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
-                #player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+                /* Base styles */
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                    -webkit-touch-callout: none !important;
+                    -webkit-user-select: none !important;
+                    -khtml-user-select: none !important;
+                    -moz-user-select: none !important;
+                    -ms-user-select: none !important;
+                    user-select: none !important;
+                }
+
+                html, body {
+                    width: 100%;
+                    height: 100%;
+                    background: #000;
+                    overflow: hidden;
+                    -webkit-touch-callout: none !important;
+                    -webkit-user-select: none !important;
+                }
+
+                #player {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    pointer-events: auto;
+                }
+
+                /* Hide YouTube logo watermark that could be clicked */
+                .ytp-watermark {
+                    display: none !important;
+                }
+
+                /* Hide share button */
+                .ytp-share-button {
+                    display: none !important;
+                }
+
+                /* Hide watch later button */
+                .ytp-watch-later-button {
+                    display: none !important;
+                }
+
+                /* Hide YouTube logo in controls */
+                .ytp-youtube-button {
+                    display: none !important;
+                }
+
+                /* Hide more videos overlay */
+                .ytp-pause-overlay {
+                    display: none !important;
+                }
+
+                /* Hide end screen suggestions */
+                .ytp-endscreen-content {
+                    display: none !important;
+                }
+
+                /* Hide info cards */
+                .ytp-cards-button {
+                    display: none !important;
+                }
+
+                .ytp-ce-element {
+                    display: none !important;
+                }
+
+                /* Overlay to block any remaining clickable YouTube elements */
+                #protection-overlay {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 60px; /* Leave room for play button area */
+                    height: 40px;
+                    z-index: 9999;
+                    background: transparent;
+                }
             </style>
         </head>
         <body>
             <div id="player"></div>
+            <div id="protection-overlay"></div>
             <script src="https://www.youtube.com/iframe_api"></script>
             <script>
                 var player;
                 var progressInterval;
+
+                // Disable context menu (right click / long press)
+                document.addEventListener('contextmenu', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }, true);
+
+                // Disable text selection
+                document.addEventListener('selectstart', function(e) {
+                    e.preventDefault();
+                    return false;
+                });
+
+                // Disable copy
+                document.addEventListener('copy', function(e) {
+                    e.preventDefault();
+                    return false;
+                });
+
+                // Disable cut
+                document.addEventListener('cut', function(e) {
+                    e.preventDefault();
+                    return false;
+                });
+
+                // Block long press
+                document.addEventListener('touchstart', function(e) {
+                    if (e.touches.length > 1) {
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+
+                var longPressTimer;
+                document.addEventListener('touchstart', function(e) {
+                    longPressTimer = setTimeout(function() {
+                        e.preventDefault();
+                    }, 500);
+                }, { passive: true });
+
+                document.addEventListener('touchend', function() {
+                    clearTimeout(longPressTimer);
+                });
+
+                document.addEventListener('touchmove', function() {
+                    clearTimeout(longPressTimer);
+                });
 
                 function onYouTubeIframeAPIReady() {
                     player = new YT.Player('player', {
@@ -334,6 +482,28 @@ public class YouTubePlayerView: UIView {
                 function onPlayerReady(event) {
                     sendMessage('ready', {});
                     startProgressTracking();
+
+                    // Additional protection: try to hide elements after player loads
+                    setTimeout(hideYouTubeElements, 1000);
+                    setTimeout(hideYouTubeElements, 3000);
+                }
+
+                function hideYouTubeElements() {
+                    try {
+                        var iframe = document.querySelector('iframe');
+                        if (iframe && iframe.contentDocument) {
+                            var style = iframe.contentDocument.createElement('style');
+                            style.textContent = `
+                                .ytp-watermark, .ytp-share-button, .ytp-watch-later-button,
+                                .ytp-youtube-button, .ytp-pause-overlay, .ytp-endscreen-content,
+                                .ytp-cards-button, .ytp-ce-element, .ytp-title-channel,
+                                .ytp-title-link { display: none !important; }
+                            `;
+                            iframe.contentDocument.head.appendChild(style);
+                        }
+                    } catch(e) {
+                        // Cross-origin restrictions may prevent this
+                    }
                 }
 
                 function onPlayerStateChange(event) {
@@ -394,6 +564,8 @@ extension YouTubePlayerView: WKNavigationDelegate {
            urlString.contains("youtube.com/s/player") ||
            urlString.contains("ytimg.com") ||
            urlString.contains("googlevideo.com") ||
+           urlString.contains("googleads") ||
+           urlString.contains("doubleclick") ||
            urlString.hasPrefix("data:") ||
            urlString.hasPrefix("about:") {
             decisionHandler(.allow)
@@ -403,6 +575,8 @@ extension YouTubePlayerView: WKNavigationDelegate {
         // Block navigation to external YouTube pages (prevents app/Safari redirects)
         if urlString.contains("youtube.com/watch") ||
            urlString.contains("youtu.be/") ||
+           urlString.contains("youtube.com/channel") ||
+           urlString.contains("youtube.com/user") ||
            navigationAction.navigationType == .linkActivated {
             decisionHandler(.cancel)
             return
@@ -415,6 +589,40 @@ extension YouTubePlayerView: WKNavigationDelegate {
         }
 
         decisionHandler(.cancel)
+    }
+}
+
+// MARK: - WKUIDelegate (Block context menus and alerts)
+
+extension YouTubePlayerView: WKUIDelegate {
+
+    // Block context menu (long press menu) - iOS 13+
+    @available(iOS 13.0, *)
+    public func webView(_ webView: WKWebView, contextMenuConfigurationForElement elementInfo: WKContextMenuElementInfo, completionHandler: @escaping (UIContextMenuConfiguration?) -> Void) {
+        // Return nil to disable context menu completely
+        completionHandler(nil)
+    }
+
+    // Block preview (peek) - iOS 13+
+    @available(iOS 13.0, *)
+    public func webView(_ webView: WKWebView, contextMenuWillPresentForElement elementInfo: WKContextMenuElementInfo) {
+        // Do nothing - context menu is already blocked
+    }
+
+    // Block JavaScript alerts
+    public func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
+        completionHandler()
+    }
+
+    // Block JavaScript confirms
+    public func webView(_ webView: WKWebView, runJavaScriptConfirmPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (Bool) -> Void) {
+        completionHandler(false)
+    }
+
+    // Block new window/tab requests (prevents opening YouTube in new window)
+    public func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
+        // Return nil to block opening new windows
+        return nil
     }
 }
 
@@ -520,18 +728,19 @@ public class YouTubeFullscreenViewController: UIViewController {
 
         // Add close button
         let closeButton = UIButton(type: .system)
-        closeButton.setTitle("✕", for: .normal)
-        closeButton.titleLabel?.font = .systemFont(ofSize: 24, weight: .bold)
+        closeButton.setTitle("Done", for: .normal)
+        closeButton.titleLabel?.font = .systemFont(ofSize: 17, weight: .semibold)
         closeButton.setTitleColor(.white, for: .normal)
+        closeButton.backgroundColor = UIColor.black.withAlphaComponent(0.5)
+        closeButton.layer.cornerRadius = 8
+        closeButton.contentEdgeInsets = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
         closeButton.addTarget(self, action: #selector(closeTapped), for: .touchUpInside)
         closeButton.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(closeButton)
 
         NSLayoutConstraint.activate([
             closeButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
-            closeButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            closeButton.widthAnchor.constraint(equalToConstant: 44),
-            closeButton.heightAnchor.constraint(equalToConstant: 44)
+            closeButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
         ])
     }
 
