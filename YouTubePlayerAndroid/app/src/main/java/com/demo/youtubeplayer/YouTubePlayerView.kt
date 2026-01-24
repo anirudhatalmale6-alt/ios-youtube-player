@@ -115,12 +115,18 @@ class YouTubePlayerView @JvmOverloads constructor(
                     if (url.contains("youtube.com/iframe_api") ||
                         url.contains("youtube.com/embed") ||
                         url.contains("youtube.com/s/player") ||
+                        url.contains("youtube.com/ysc") ||
+                        url.contains("youtube.com/api") ||
+                        url.contains("youtube.com/youtubei") ||
                         url.contains("ytimg.com") ||
                         url.contains("googlevideo.com") ||
+                        url.contains("ggpht.com") ||
+                        url.contains("gstatic.com") ||
                         url.contains("googleads") ||
                         url.contains("doubleclick") ||
                         url.startsWith("data:") ||
-                        url.startsWith("about:")) {
+                        url.startsWith("about:") ||
+                        url.startsWith("blob:")) {
                         return false
                     }
 
@@ -164,8 +170,9 @@ class YouTubePlayerView @JvmOverloads constructor(
     fun loadVideo(videoId: String) {
         currentVideoId = videoId
         isReady = false
+        // Use null baseURL - YouTube IFrame API works better without restrictive origin
         webView?.loadDataWithBaseURL(
-            "https://www.youtube.com",
+            null,
             generateHTML(videoId),
             "text/html",
             "UTF-8",
@@ -426,7 +433,7 @@ class YouTubePlayerView @JvmOverloads constructor(
                                 'modestbranding': 1,
                                 'fs': 0,
                                 'disablekb': 0,
-                                'origin': 'https://www.youtube.com'
+                                'enablejsapi': 1
                             },
                             events: {
                                 'onReady': onPlayerReady,

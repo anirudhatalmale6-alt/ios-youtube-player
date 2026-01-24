@@ -169,7 +169,8 @@ public class YouTubePlayerView: UIView {
         isReady = false
 
         let html = generateHTML(videoId: videoId)
-        webView.loadHTMLString(html, baseURL: URL(string: "https://www.youtube.com"))
+        // Use nil baseURL - YouTube IFrame API works better without restrictive origin
+        webView.loadHTMLString(html, baseURL: nil)
     }
 
     /// Load a video by full YouTube URL
@@ -314,7 +315,8 @@ public class YouTubePlayerView: UIView {
             "modestbranding": 1,
             "fs": 0,  // Disable YouTube's native fullscreen (we handle it ourselves)
             "disablekb": 0,
-            "origin": "https://www.youtube.com"
+            "enablejsapi": 1
+            // Note: origin parameter removed - not needed when loading from local HTML
         ]
 
         // Override with custom player vars
@@ -622,12 +624,18 @@ extension YouTubePlayerView: WKNavigationDelegate {
         if urlString.contains("youtube.com/iframe_api") ||
            urlString.contains("youtube.com/embed") ||
            urlString.contains("youtube.com/s/player") ||
+           urlString.contains("youtube.com/ysc") ||
+           urlString.contains("youtube.com/api") ||
+           urlString.contains("youtube.com/youtubei") ||
            urlString.contains("ytimg.com") ||
            urlString.contains("googlevideo.com") ||
+           urlString.contains("ggpht.com") ||
+           urlString.contains("gstatic.com") ||
            urlString.contains("googleads") ||
            urlString.contains("doubleclick") ||
            urlString.hasPrefix("data:") ||
-           urlString.hasPrefix("about:") {
+           urlString.hasPrefix("about:") ||
+           urlString.hasPrefix("blob:") {
             decisionHandler(.allow)
             return
         }
