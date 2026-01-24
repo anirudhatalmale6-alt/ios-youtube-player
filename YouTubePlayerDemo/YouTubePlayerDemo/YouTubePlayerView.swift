@@ -360,9 +360,24 @@ public class YouTubePlayerView: UIView {
                     pointer-events: auto;
                 }
 
-                /* Hide YouTube logo watermark that could be clicked */
-                .ytp-watermark {
+                /* HIDE ALL YOUTUBE LOGOS AND BRANDING */
+
+                /* YouTube logo watermark (bottom right corner) */
+                .ytp-watermark,
+                .ytp-watermark-container {
                     display: none !important;
+                    visibility: hidden !important;
+                    opacity: 0 !important;
+                    pointer-events: none !important;
+                }
+
+                /* YouTube logo button in controls bar */
+                .ytp-youtube-button,
+                .ytp-button[aria-label*="YouTube"],
+                a[href*="youtube.com"],
+                .ytp-title-link {
+                    display: none !important;
+                    visibility: hidden !important;
                 }
 
                 /* Hide share button */
@@ -375,27 +390,50 @@ public class YouTubePlayerView: UIView {
                     display: none !important;
                 }
 
-                /* Hide YouTube logo in controls */
-                .ytp-youtube-button {
-                    display: none !important;
-                }
-
-                /* Hide more videos overlay */
-                .ytp-pause-overlay {
+                /* Hide more videos overlay on pause */
+                .ytp-pause-overlay,
+                .ytp-pause-overlay-container {
                     display: none !important;
                 }
 
                 /* Hide end screen suggestions */
-                .ytp-endscreen-content {
+                .ytp-endscreen-content,
+                .ytp-endscreen-previous,
+                .ytp-endscreen-next,
+                .ytp-ce-element,
+                .ytp-ce-covering-overlay,
+                .ytp-ce-element-shadow,
+                .ytp-ce-covering-image,
+                .ytp-ce-expanding-image,
+                .ytp-ce-playlist-title {
                     display: none !important;
                 }
 
                 /* Hide info cards */
-                .ytp-cards-button {
+                .ytp-cards-button,
+                .ytp-cards-teaser,
+                .ytp-ce-channel,
+                .ytp-ce-video {
                     display: none !important;
                 }
 
-                .ytp-ce-element {
+                /* Hide channel info and title bar */
+                .ytp-title,
+                .ytp-title-text,
+                .ytp-title-channel,
+                .ytp-title-channel-logo,
+                .ytp-chrome-top {
+                    display: none !important;
+                }
+
+                /* Hide "Watch on YouTube" text */
+                .ytp-impression-link,
+                .ytp-show-cards-title {
+                    display: none !important;
+                }
+
+                /* Hide more options button that might show YouTube links */
+                .ytp-overflow-button {
                     display: none !important;
                 }
 
@@ -405,15 +443,28 @@ public class YouTubePlayerView: UIView {
                     top: 0;
                     left: 0;
                     right: 60px; /* Leave room for play button area */
-                    height: 40px;
+                    height: 50px;
                     z-index: 9999;
                     background: transparent;
+                }
+
+                /* Bottom-right logo blocker overlay */
+                #logo-blocker {
+                    position: absolute;
+                    bottom: 0;
+                    right: 0;
+                    width: 120px;
+                    height: 50px;
+                    z-index: 9998;
+                    background: transparent;
+                    pointer-events: auto;
                 }
             </style>
         </head>
         <body>
             <div id="player"></div>
             <div id="protection-overlay"></div>
+            <div id="logo-blocker"></div>
             <script src="https://www.youtube.com/iframe_api"></script>
             <script>
                 var player;
@@ -494,10 +545,17 @@ public class YouTubePlayerView: UIView {
                         if (iframe && iframe.contentDocument) {
                             var style = iframe.contentDocument.createElement('style');
                             style.textContent = `
-                                .ytp-watermark, .ytp-share-button, .ytp-watch-later-button,
+                                .ytp-watermark, .ytp-watermark-container,
+                                .ytp-share-button, .ytp-watch-later-button,
                                 .ytp-youtube-button, .ytp-pause-overlay, .ytp-endscreen-content,
                                 .ytp-cards-button, .ytp-ce-element, .ytp-title-channel,
-                                .ytp-title-link { display: none !important; }
+                                .ytp-title-link, .ytp-title, .ytp-title-text,
+                                .ytp-chrome-top, .ytp-impression-link,
+                                .ytp-overflow-button, a[href*="youtube.com"] {
+                                    display: none !important;
+                                    visibility: hidden !important;
+                                    opacity: 0 !important;
+                                }
                             `;
                             iframe.contentDocument.head.appendChild(style);
                         }

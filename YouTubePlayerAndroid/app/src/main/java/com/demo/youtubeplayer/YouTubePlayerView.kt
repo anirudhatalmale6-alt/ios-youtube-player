@@ -352,18 +352,45 @@ class YouTubePlayerView @JvmOverloads constructor(
                         width: 100%;
                         height: 100%;
                     }
-                    .ytp-watermark { display: none !important; }
+                    /* HIDE ALL YOUTUBE LOGOS AND BRANDING */
+                    .ytp-watermark, .ytp-watermark-container {
+                        display: none !important;
+                        visibility: hidden !important;
+                        opacity: 0 !important;
+                        pointer-events: none !important;
+                    }
+                    .ytp-youtube-button, .ytp-button[aria-label*="YouTube"],
+                    a[href*="youtube.com"], .ytp-title-link {
+                        display: none !important;
+                        visibility: hidden !important;
+                    }
                     .ytp-share-button { display: none !important; }
                     .ytp-watch-later-button { display: none !important; }
-                    .ytp-youtube-button { display: none !important; }
-                    .ytp-pause-overlay { display: none !important; }
-                    .ytp-endscreen-content { display: none !important; }
-                    .ytp-cards-button { display: none !important; }
-                    .ytp-ce-element { display: none !important; }
+                    .ytp-pause-overlay, .ytp-pause-overlay-container { display: none !important; }
+                    .ytp-endscreen-content, .ytp-endscreen-previous, .ytp-endscreen-next,
+                    .ytp-ce-element, .ytp-ce-covering-overlay { display: none !important; }
+                    .ytp-cards-button, .ytp-cards-teaser { display: none !important; }
+                    .ytp-title, .ytp-title-text, .ytp-title-channel,
+                    .ytp-title-channel-logo, .ytp-chrome-top { display: none !important; }
+                    .ytp-impression-link, .ytp-show-cards-title { display: none !important; }
+                    .ytp-overflow-button { display: none !important; }
+
+                    /* Overlay to block logo clicks */
+                    #logo-blocker {
+                        position: absolute;
+                        bottom: 0;
+                        right: 0;
+                        width: 120px;
+                        height: 50px;
+                        z-index: 9998;
+                        background: transparent;
+                        pointer-events: auto;
+                    }
                 </style>
             </head>
             <body>
                 <div id="player"></div>
+                <div id="logo-blocker"></div>
                 <script src="https://www.youtube.com/iframe_api"></script>
                 <script>
                     var player;
