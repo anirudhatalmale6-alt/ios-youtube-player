@@ -3,6 +3,7 @@
 //  YouTubePlayerDemo
 //
 //  Sample view controller demonstrating the protected YouTube player
+//  with quality and speed controls
 //
 
 import UIKit
@@ -15,12 +16,41 @@ class ViewController: UIViewController {
     private var statusLabel: UILabel!
     private var timeLabel: UILabel!
     private var videoIdTextField: UITextField!
+    private var qualityButton: UIButton!
+    private var speedButton: UIButton!
+
+    // Current settings
+    private var currentSpeed: Float = 1.0
+    private var currentQuality: YouTubePlaybackQuality = .auto
 
     // Sample video IDs for testing
     private let sampleVideos = [
         ("Big Buck Bunny", "aqz-KE-bpKQ"),
         ("Sintel Trailer", "eRsGyueVLvQ"),
         ("Elephants Dream", "TLkA0RELQ1g")
+    ]
+
+    // Speed options
+    private let speedOptions: [(String, Float)] = [
+        ("0.25x", 0.25),
+        ("0.5x", 0.5),
+        ("0.75x", 0.75),
+        ("Normal", 1.0),
+        ("1.25x", 1.25),
+        ("1.5x", 1.5),
+        ("1.75x", 1.75),
+        ("2x", 2.0)
+    ]
+
+    // Quality options
+    private let qualityOptions: [(String, YouTubePlaybackQuality)] = [
+        ("Auto", .auto),
+        ("Small (240p)", .small),
+        ("Medium (360p)", .medium),
+        ("Large (480p)", .large),
+        ("HD 720p", .hd720),
+        ("HD 1080p", .hd1080),
+        ("High Res", .highRes)
     ]
 
     // MARK: - Lifecycle
@@ -38,7 +68,7 @@ class ViewController: UIViewController {
         // Title
         let titleLabel = UILabel()
         titleLabel.text = "Protected YouTube Player"
-        titleLabel.font = .systemFont(ofSize: 24, weight: .bold)
+        titleLabel.font = .systemFont(ofSize: 22, weight: .bold)
         titleLabel.textAlignment = .center
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(titleLabel)
@@ -71,10 +101,15 @@ class ViewController: UIViewController {
         playerView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(playerView)
 
-        // Control buttons stack
-        let controlsStack = createControlButtons()
-        controlsStack.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(controlsStack)
+        // Playback control buttons stack (Play, Pause, Fullscreen)
+        let playbackStack = createPlaybackButtons()
+        playbackStack.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(playbackStack)
+
+        // Quality and Speed controls stack
+        let settingsStack = createSettingsButtons()
+        settingsStack.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(settingsStack)
 
         // Status label
         statusLabel = UILabel()
@@ -108,8 +143,8 @@ class ViewController: UIViewController {
 
         // Info label
         let infoLabel = UILabel()
-        infoLabel.text = "✓ No redirects to YouTube app\n✓ No copy link option\n✓ No share button\n✓ Content stays in-app"
-        infoLabel.font = .systemFont(ofSize: 13)
+        infoLabel.text = "✓ No redirects  ✓ No copy link  ✓ No share"
+        infoLabel.font = .systemFont(ofSize: 12)
         infoLabel.textColor = .systemGreen
         infoLabel.numberOfLines = 0
         infoLabel.textAlignment = .center
@@ -118,28 +153,31 @@ class ViewController: UIViewController {
 
         // Layout
         NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 12),
             titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
 
-            videoIdTextField.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 16),
+            videoIdTextField.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 12),
             videoIdTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             videoIdTextField.trailingAnchor.constraint(equalTo: loadButton.leadingAnchor, constant: -8),
-            videoIdTextField.heightAnchor.constraint(equalToConstant: 44),
+            videoIdTextField.heightAnchor.constraint(equalToConstant: 40),
 
             loadButton.centerYAnchor.constraint(equalTo: videoIdTextField.centerYAnchor),
             loadButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             loadButton.widthAnchor.constraint(equalToConstant: 60),
 
-            playerView.topAnchor.constraint(equalTo: videoIdTextField.bottomAnchor, constant: 16),
-            playerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            playerView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            playerView.topAnchor.constraint(equalTo: videoIdTextField.bottomAnchor, constant: 12),
+            playerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            playerView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             playerView.heightAnchor.constraint(equalTo: playerView.widthAnchor, multiplier: 9.0/16.0),
 
-            controlsStack.topAnchor.constraint(equalTo: playerView.bottomAnchor, constant: 16),
-            controlsStack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            playbackStack.topAnchor.constraint(equalTo: playerView.bottomAnchor, constant: 12),
+            playbackStack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
 
-            statusLabel.topAnchor.constraint(equalTo: controlsStack.bottomAnchor, constant: 12),
+            settingsStack.topAnchor.constraint(equalTo: playbackStack.bottomAnchor, constant: 10),
+            settingsStack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+
+            statusLabel.topAnchor.constraint(equalTo: settingsStack.bottomAnchor, constant: 10),
             statusLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             statusLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
 
@@ -147,13 +185,13 @@ class ViewController: UIViewController {
             timeLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             timeLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
 
-            samplesLabel.topAnchor.constraint(equalTo: timeLabel.bottomAnchor, constant: 20),
+            samplesLabel.topAnchor.constraint(equalTo: timeLabel.bottomAnchor, constant: 16),
             samplesLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
 
             samplesStack.topAnchor.constraint(equalTo: samplesLabel.bottomAnchor, constant: 8),
             samplesStack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
 
-            infoLabel.topAnchor.constraint(equalTo: samplesStack.bottomAnchor, constant: 20),
+            infoLabel.topAnchor.constraint(equalTo: samplesStack.bottomAnchor, constant: 16),
             infoLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             infoLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
         ])
@@ -164,12 +202,40 @@ class ViewController: UIViewController {
         playerView.load(videoId: firstVideo.1)
     }
 
-    private func createControlButtons() -> UIStackView {
-        let playButton = createButton(title: "▶️ Play", action: #selector(playTapped))
-        let pauseButton = createButton(title: "⏸️ Pause", action: #selector(pauseTapped))
-        let fullscreenButton = createButton(title: "⛶ Fullscreen", action: #selector(fullscreenTapped))
+    private func createPlaybackButtons() -> UIStackView {
+        let playButton = createButton(title: "▶ Play", action: #selector(playTapped))
+        let pauseButton = createButton(title: "⏸ Pause", action: #selector(pauseTapped))
+        let fullscreenButton = createButton(title: "⛶ Full", action: #selector(fullscreenTapped))
 
         let stack = UIStackView(arrangedSubviews: [playButton, pauseButton, fullscreenButton])
+        stack.axis = .horizontal
+        stack.spacing = 10
+        stack.distribution = .fillEqually
+        return stack
+    }
+
+    private func createSettingsButtons() -> UIStackView {
+        // Quality button
+        qualityButton = UIButton(type: .system)
+        qualityButton.setTitle("Quality: Auto ▼", for: .normal)
+        qualityButton.titleLabel?.font = .systemFont(ofSize: 13, weight: .medium)
+        qualityButton.backgroundColor = .systemBlue.withAlphaComponent(0.1)
+        qualityButton.setTitleColor(.systemBlue, for: .normal)
+        qualityButton.layer.cornerRadius = 8
+        qualityButton.contentEdgeInsets = UIEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
+        qualityButton.addTarget(self, action: #selector(qualityTapped), for: .touchUpInside)
+
+        // Speed button
+        speedButton = UIButton(type: .system)
+        speedButton.setTitle("Speed: 1x ▼", for: .normal)
+        speedButton.titleLabel?.font = .systemFont(ofSize: 13, weight: .medium)
+        speedButton.backgroundColor = .systemOrange.withAlphaComponent(0.1)
+        speedButton.setTitleColor(.systemOrange, for: .normal)
+        speedButton.layer.cornerRadius = 8
+        speedButton.contentEdgeInsets = UIEdgeInsets(top: 8, left: 12, bottom: 8, right: 12)
+        speedButton.addTarget(self, action: #selector(speedTapped), for: .touchUpInside)
+
+        let stack = UIStackView(arrangedSubviews: [qualityButton, speedButton])
         stack.axis = .horizontal
         stack.spacing = 12
         stack.distribution = .fillEqually
@@ -197,10 +263,10 @@ class ViewController: UIViewController {
     private func createButton(title: String, action: Selector) -> UIButton {
         let button = UIButton(type: .system)
         button.setTitle(title, for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 14, weight: .medium)
+        button.titleLabel?.font = .systemFont(ofSize: 13, weight: .medium)
         button.backgroundColor = .systemGray6
         button.layer.cornerRadius = 8
-        button.contentEdgeInsets = UIEdgeInsets(top: 10, left: 16, bottom: 10, right: 16)
+        button.contentEdgeInsets = UIEdgeInsets(top: 8, left: 14, bottom: 8, right: 14)
         button.addTarget(self, action: action, for: .touchUpInside)
         return button
     }
@@ -233,6 +299,72 @@ class ViewController: UIViewController {
         statusLabel.text = "Status: Loading \(video.0)..."
     }
 
+    // MARK: - Quality Selection
+
+    @objc private func qualityTapped() {
+        let alert = UIAlertController(title: "Select Quality", message: nil, preferredStyle: .actionSheet)
+
+        for (name, quality) in qualityOptions {
+            let action = UIAlertAction(title: name, style: .default) { [weak self] _ in
+                self?.setQuality(quality, name: name)
+            }
+            // Mark current selection
+            if quality == currentQuality {
+                action.setValue(true, forKey: "checked")
+            }
+            alert.addAction(action)
+        }
+
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+
+        // iPad support
+        if let popover = alert.popoverPresentationController {
+            popover.sourceView = qualityButton
+            popover.sourceRect = qualityButton.bounds
+        }
+
+        present(alert, animated: true)
+    }
+
+    private func setQuality(_ quality: YouTubePlaybackQuality, name: String) {
+        currentQuality = quality
+        playerView.setPlaybackQuality(quality)
+        qualityButton.setTitle("Quality: \(name.replacingOccurrences(of: " (", with: "\n(").components(separatedBy: "\n").first ?? name) ▼", for: .normal)
+    }
+
+    // MARK: - Speed Selection
+
+    @objc private func speedTapped() {
+        let alert = UIAlertController(title: "Select Speed", message: nil, preferredStyle: .actionSheet)
+
+        for (name, speed) in speedOptions {
+            let action = UIAlertAction(title: name, style: .default) { [weak self] _ in
+                self?.setSpeed(speed, name: name)
+            }
+            // Mark current selection
+            if speed == currentSpeed {
+                action.setValue(true, forKey: "checked")
+            }
+            alert.addAction(action)
+        }
+
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+
+        // iPad support
+        if let popover = alert.popoverPresentationController {
+            popover.sourceView = speedButton
+            popover.sourceRect = speedButton.bounds
+        }
+
+        present(alert, animated: true)
+    }
+
+    private func setSpeed(_ speed: Float, name: String) {
+        currentSpeed = speed
+        playerView.setPlaybackRate(speed)
+        speedButton.setTitle("Speed: \(name) ▼", for: .normal)
+    }
+
     // MARK: - Helpers
 
     private func formatTime(_ seconds: Float) -> String {
@@ -257,9 +389,11 @@ extension ViewController: YouTubePlayerViewDelegate {
 
     func playerReady(_ playerView: YouTubePlayerView) {
         statusLabel.text = "Status: Ready"
+        statusLabel.textColor = .secondaryLabel
     }
 
     func player(_ playerView: YouTubePlayerView, didChangeStateTo state: YouTubePlayerState) {
+        statusLabel.textColor = .secondaryLabel
         switch state {
         case .unstarted:
             statusLabel.text = "Status: Unstarted"
