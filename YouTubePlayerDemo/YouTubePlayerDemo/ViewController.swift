@@ -26,7 +26,7 @@ class ViewController: UIViewController {
     private var currentQuality: YouTubePlaybackQuality = .auto
 
     // CHANGE THIS VIDEO ID TO TEST DIFFERENT VIDEOS
-    private let VIDEO_ID = "dQw4w9WgXcQ"  // Rick Astley - Never Gonna Give You Up (worldwide available)
+    private let VIDEO_ID = "dSyP3Uc30HE"  // Client's test video
 
     // Sample video IDs for testing (all worldwide available)
     private let sampleVideos = [

@@ -20,7 +20,7 @@ class MainActivity : AppCompatActivity(), YouTubePlayerView.YouTubePlayerListene
     private lateinit var speedButton: Button
 
     // CHANGE THIS VIDEO ID TO TEST DIFFERENT VIDEOS
-    private val VIDEO_ID = "dQw4w9WgXcQ"  // Rick Astley - Never Gonna Give You Up (worldwide available)
+    private val VIDEO_ID = "dSyP3Uc30HE"  // Client's test video
 
     private var currentSpeed = 1.0f
     private var currentQuality = YouTubePlayerView.PlaybackQuality.AUTO
