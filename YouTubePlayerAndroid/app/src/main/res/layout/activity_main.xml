@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Title -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Protected YouTube Player"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textAlignment="center"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Video ID Input -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+
+            <EditText
+                android:id="@+id/videoIdInput"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:hint="Enter YouTube Video ID"
+                android:inputType="text"
+                android:singleLine="true"
+                android:padding="12dp"
+                android:background="@android:drawable/edit_text" />
+
+            <Button
+                android:id="@+id/loadButton"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="Load"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <!-- YouTube Player View -->
+        <com.demo.youtubeplayer.YouTubePlayerView
+            android:id="@+id/playerView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0"
+            android:background="#000000" />
+
+        <!-- Adjust height programmatically or use aspectRatio constraint -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:visibility="gone" />
+
+        <!-- Playback Controls -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="12dp">
+
+            <Button
+                android:id="@+id/playButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="▶ Play"
+                android:textSize="13sp" />
+
+            <Button
+                android:id="@+id/pauseButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="⏸ Pause"
+                android:textSize="13sp"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <!-- Quality and Speed Controls -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="8dp">
+
+            <Button
+                android:id="@+id/qualityButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Quality: Auto"
+                android:textSize="12sp"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/speedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Speed: Normal"
+                android:textSize="12sp"
+                android:textAllCaps="false"
+                android:layout_marginStart="12dp" />
+        </LinearLayout>
+
+        <!-- Status -->
+        <TextView
+            android:id="@+id/statusText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Status: Not loaded"
+            android:textSize="14sp"
+            android:textAlignment="center"
+            android:textColor="@android:color/darker_gray"
+            android:layout_marginTop="12dp" />
+
+        <!-- Time -->
+        <TextView
+            android:id="@+id/timeText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Time: 0:00"
+            android:textSize="14sp"
+            android:textAlignment="center"
+            android:textColor="@android:color/darker_gray"
+            android:fontFamily="monospace"
+            android:layout_marginTop="4dp" />
+
+        <!-- Sample Videos -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Sample Videos:"
+            android:textSize="14sp"
+            android:textAlignment="center"
+            android:textColor="@android:color/darker_gray"
+            android:layout_marginTop="16dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="8dp">
+
+            <Button
+                android:id="@+id/sample1Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sample 1"
+                android:textSize="11sp"
+                android:textAllCaps="false"
+                style="?android:attr/borderlessButtonStyle" />
+
+            <Button
+                android:id="@+id/sample2Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sample 2"
+                android:textSize="11sp"
+                android:textAllCaps="false"
+                style="?android:attr/borderlessButtonStyle" />
+
+            <Button
+                android:id="@+id/sample3Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sample 3"
+                android:textSize="11sp"
+                android:textAllCaps="false"
+                style="?android:attr/borderlessButtonStyle" />
+        </LinearLayout>
+
+        <!-- Info -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="✓ No redirects  ✓ No copy link  ✓ No share"
+            android:textSize="12sp"
+            android:textAlignment="center"
+            android:textColor="#4CAF50"
+            android:layout_marginTop="16dp" />
+
+    </LinearLayout>
+</ScrollView>
