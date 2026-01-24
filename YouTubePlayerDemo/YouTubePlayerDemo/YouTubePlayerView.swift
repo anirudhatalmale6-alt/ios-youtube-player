@@ -126,12 +126,14 @@ public class YouTubePlayerView: UIView {
         config.allowsInlineMediaPlayback = true
         config.mediaTypesRequiringUserActionForPlayback = []
 
-        // Disable link preview and data detection for security
-        let preferences = WKWebpagePreferences()
-        if #available(iOS 14.0, *) {
-            preferences.allowsContentJavaScript = true
+        // Disable link preview and data detection for security (iOS 13+)
+        if #available(iOS 13.0, *) {
+            let preferences = WKWebpagePreferences()
+            if #available(iOS 14.0, *) {
+                preferences.allowsContentJavaScript = true
+            }
+            config.defaultWebpagePreferences = preferences
         }
-        config.defaultWebpagePreferences = preferences
 
         // Create web view
         webView = WKWebView(frame: bounds, configuration: config)
