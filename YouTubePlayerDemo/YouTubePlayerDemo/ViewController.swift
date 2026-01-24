@@ -25,11 +25,14 @@ class ViewController: UIViewController {
     private var currentSpeed: Float = 1.0
     private var currentQuality: YouTubePlaybackQuality = .auto
 
-    // Sample video IDs for testing
+    // CHANGE THIS VIDEO ID TO TEST DIFFERENT VIDEOS
+    private let VIDEO_ID = "dQw4w9WgXcQ"  // Rick Astley - Never Gonna Give You Up (worldwide available)
+
+    // Sample video IDs for testing (all worldwide available)
     private let sampleVideos = [
-        ("Big Buck Bunny", "aqz-KE-bpKQ"),
-        ("Sintel Trailer", "eRsGyueVLvQ"),
-        ("Elephants Dream", "TLkA0RELQ1g")
+        ("Rick Astley", "dQw4w9WgXcQ"),
+        ("Gangnam Style", "9bZkp7q19f0"),
+        ("Despacito", "kJQP7kiw5Fk")
     ]
 
     // Speed options
@@ -256,10 +259,9 @@ class ViewController: UIViewController {
             infoLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
         ])
 
-        // Load first sample video
-        let firstVideo = sampleVideos[0]
-        videoIdTextField.text = firstVideo.1
-        playerView.load(videoId: firstVideo.1)
+        // Auto-load the video
+        videoIdTextField.text = VIDEO_ID
+        playerView.load(videoId: VIDEO_ID)
     }
 
     private func createPlaybackButtons() -> UIStackView {
