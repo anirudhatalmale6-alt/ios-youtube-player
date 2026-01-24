@@ -168,8 +168,8 @@ public class YouTubePlayerView: UIView {
         currentVideoId = videoId
         isReady = false
 
-        // Build embed URL with parameters - no origin needed for direct embed
-        let embedURL = "https://www.youtube.com/embed/\(videoId)?playsinline=1&autoplay=1&controls=1&rel=0&modestbranding=1&fs=0"
+        // Build embed URL with parameters - use youtube-nocookie.com for better WebView compatibility
+        let embedURL = "https://www.youtube-nocookie.com/embed/\(videoId)?playsinline=1&autoplay=1&controls=1&rel=0&modestbranding=1"
 
         if let url = URL(string: embedURL) {
             let request = URLRequest(url: url)
@@ -632,14 +632,8 @@ extension YouTubePlayerView: WKNavigationDelegate {
         let urlString = url.absoluteString
 
         // Allow YouTube embed and player resources
-        if urlString.contains("youtube.com/embed") ||
-           urlString.contains("youtube.com/iframe_api") ||
-           urlString.contains("youtube.com/s/player") ||
-           urlString.contains("youtube.com/ysc") ||
-           urlString.contains("youtube.com/api") ||
-           urlString.contains("youtube.com/youtubei") ||
-           urlString.contains("youtube.com/get_video_info") ||
-           urlString.contains("youtube.com/videoplayback") ||
+        if urlString.contains("youtube.com") ||
+           urlString.contains("youtube-nocookie.com") ||
            urlString.contains("ytimg.com") ||
            urlString.contains("googlevideo.com") ||
            urlString.contains("ggpht.com") ||
@@ -650,6 +644,12 @@ extension YouTubePlayerView: WKNavigationDelegate {
            urlString.hasPrefix("data:") ||
            urlString.hasPrefix("about:") ||
            urlString.hasPrefix("blob:") {
+            // Block only specific external navigation
+            if urlString.contains("youtube.com/watch") ||
+               urlString.contains("youtu.be/") {
+                decisionHandler(.cancel)
+                return
+            }
             decisionHandler(.allow)
             return
         }

@@ -112,14 +112,8 @@ class YouTubePlayerView @JvmOverloads constructor(
                     val url = request?.url?.toString() ?: return false
 
                     // Allow YouTube embed and player resources
-                    if (url.contains("youtube.com/embed") ||
-                        url.contains("youtube.com/iframe_api") ||
-                        url.contains("youtube.com/s/player") ||
-                        url.contains("youtube.com/ysc") ||
-                        url.contains("youtube.com/api") ||
-                        url.contains("youtube.com/youtubei") ||
-                        url.contains("youtube.com/get_video_info") ||
-                        url.contains("youtube.com/videoplayback") ||
+                    if (url.contains("youtube.com") ||
+                        url.contains("youtube-nocookie.com") ||
                         url.contains("ytimg.com") ||
                         url.contains("googlevideo.com") ||
                         url.contains("ggpht.com") ||
@@ -130,15 +124,11 @@ class YouTubePlayerView @JvmOverloads constructor(
                         url.startsWith("data:") ||
                         url.startsWith("about:") ||
                         url.startsWith("blob:")) {
+                        // Block only watch/share URLs
+                        if (url.contains("youtube.com/watch") || url.contains("youtu.be/")) {
+                            return true
+                        }
                         return false
-                    }
-
-                    // Block external YouTube links (prevents app/browser redirect)
-                    if (url.contains("youtube.com/watch") ||
-                        url.contains("youtu.be/") ||
-                        url.contains("youtube.com/channel") ||
-                        url.contains("youtube.com/user")) {
-                        return true // Block navigation
                     }
 
                     return true // Block all other external navigation
@@ -174,8 +164,8 @@ class YouTubePlayerView @JvmOverloads constructor(
         currentVideoId = videoId
         isReady = false
 
-        // Load YouTube embed URL directly - more reliable than IFrame API in WebView
-        val embedUrl = "https://www.youtube.com/embed/$videoId?playsinline=1&autoplay=1&controls=1&rel=0&modestbranding=1&fs=0"
+        // Load YouTube embed URL - use youtube-nocookie.com for better WebView compatibility
+        val embedUrl = "https://www.youtube-nocookie.com/embed/$videoId?playsinline=1&autoplay=1&controls=1&rel=0&modestbranding=1"
         webView?.loadUrl(embedUrl)
 
         // Mark as ready after embed loads
