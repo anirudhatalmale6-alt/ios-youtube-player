@@ -168,9 +168,20 @@ public class YouTubePlayerView: UIView {
         currentVideoId = videoId
         isReady = false
 
-        let html = generateHTML(videoId: videoId)
-        // Use nil baseURL - YouTube IFrame API works better without restrictive origin
-        webView.loadHTMLString(html, baseURL: nil)
+        // Build embed URL with parameters
+        let embedURL = "https://www.youtube.com/embed/\(videoId)?playsinline=1&controls=1&showinfo=0&rel=0&modestbranding=1&fs=0&enablejsapi=1&origin=https://www.youtube.com"
+
+        if let url = URL(string: embedURL) {
+            let request = URLRequest(url: url)
+            webView.load(request)
+
+            // Mark as ready after a short delay (embed doesn't need API callback)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+                guard let self = self else { return }
+                self.isReady = true
+                self.delegate?.playerReady(self)
+            }
+        }
     }
 
     /// Load a video by full YouTube URL
@@ -620,17 +631,20 @@ extension YouTubePlayerView: WKNavigationDelegate {
 
         let urlString = url.absoluteString
 
-        // Allow YouTube iframe API and player resources
-        if urlString.contains("youtube.com/iframe_api") ||
-           urlString.contains("youtube.com/embed") ||
+        // Allow YouTube embed and player resources
+        if urlString.contains("youtube.com/embed") ||
+           urlString.contains("youtube.com/iframe_api") ||
            urlString.contains("youtube.com/s/player") ||
            urlString.contains("youtube.com/ysc") ||
            urlString.contains("youtube.com/api") ||
            urlString.contains("youtube.com/youtubei") ||
+           urlString.contains("youtube.com/get_video_info") ||
+           urlString.contains("youtube.com/videoplayback") ||
            urlString.contains("ytimg.com") ||
            urlString.contains("googlevideo.com") ||
            urlString.contains("ggpht.com") ||
            urlString.contains("gstatic.com") ||
+           urlString.contains("google.com") ||
            urlString.contains("googleads") ||
            urlString.contains("doubleclick") ||
            urlString.hasPrefix("data:") ||

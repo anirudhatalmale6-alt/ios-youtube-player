@@ -111,17 +111,20 @@ class YouTubePlayerView @JvmOverloads constructor(
                 override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                     val url = request?.url?.toString() ?: return false
 
-                    // Allow YouTube player resources
-                    if (url.contains("youtube.com/iframe_api") ||
-                        url.contains("youtube.com/embed") ||
+                    // Allow YouTube embed and player resources
+                    if (url.contains("youtube.com/embed") ||
+                        url.contains("youtube.com/iframe_api") ||
                         url.contains("youtube.com/s/player") ||
                         url.contains("youtube.com/ysc") ||
                         url.contains("youtube.com/api") ||
                         url.contains("youtube.com/youtubei") ||
+                        url.contains("youtube.com/get_video_info") ||
+                        url.contains("youtube.com/videoplayback") ||
                         url.contains("ytimg.com") ||
                         url.contains("googlevideo.com") ||
                         url.contains("ggpht.com") ||
                         url.contains("gstatic.com") ||
+                        url.contains("google.com") ||
                         url.contains("googleads") ||
                         url.contains("doubleclick") ||
                         url.startsWith("data:") ||
@@ -170,14 +173,16 @@ class YouTubePlayerView @JvmOverloads constructor(
     fun loadVideo(videoId: String) {
         currentVideoId = videoId
         isReady = false
-        // Use null baseURL - YouTube IFrame API works better without restrictive origin
-        webView?.loadDataWithBaseURL(
-            null,
-            generateHTML(videoId),
-            "text/html",
-            "UTF-8",
-            null
-        )
+
+        // Load YouTube embed URL directly - more reliable than IFrame API in WebView
+        val embedUrl = "https://www.youtube.com/embed/$videoId?playsinline=1&controls=1&showinfo=0&rel=0&modestbranding=1&fs=0&enablejsapi=1"
+        webView?.loadUrl(embedUrl)
+
+        // Mark as ready after embed loads
+        postDelayed({
+            isReady = true
+            listener?.onReady()
+        }, 1500)
     }
 
     /**
