@@ -168,8 +168,8 @@ public class YouTubePlayerView: UIView {
         currentVideoId = videoId
         isReady = false
 
-        // Build embed URL with parameters
-        let embedURL = "https://www.youtube.com/embed/\(videoId)?playsinline=1&controls=1&showinfo=0&rel=0&modestbranding=1&fs=0&enablejsapi=1&origin=https://www.youtube.com"
+        // Build embed URL with parameters - no origin needed for direct embed
+        let embedURL = "https://www.youtube.com/embed/\(videoId)?playsinline=1&autoplay=1&controls=1&rel=0&modestbranding=1&fs=0"
 
         if let url = URL(string: embedURL) {
             let request = URLRequest(url: url)

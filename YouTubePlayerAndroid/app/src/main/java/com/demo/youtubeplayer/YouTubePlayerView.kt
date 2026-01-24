@@ -175,7 +175,7 @@ class YouTubePlayerView @JvmOverloads constructor(
         isReady = false
 
         // Load YouTube embed URL directly - more reliable than IFrame API in WebView
-        val embedUrl = "https://www.youtube.com/embed/$videoId?playsinline=1&controls=1&showinfo=0&rel=0&modestbranding=1&fs=0&enablejsapi=1"
+        val embedUrl = "https://www.youtube.com/embed/$videoId?playsinline=1&autoplay=1&controls=1&rel=0&modestbranding=1&fs=0"
         webView?.loadUrl(embedUrl)
 
         // Mark as ready after embed loads
