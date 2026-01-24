@@ -164,15 +164,41 @@ class YouTubePlayerView @JvmOverloads constructor(
         currentVideoId = videoId
         isReady = false
 
-        // Load YouTube embed URL - use youtube-nocookie.com for better WebView compatibility
-        val embedUrl = "https://www.youtube-nocookie.com/embed/$videoId?playsinline=1&autoplay=1&controls=1&rel=0&modestbranding=1"
-        webView?.loadUrl(embedUrl)
+        // Use HTML with iframe - most reliable method for WebViews
+        val html = """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+                <style>
+                    * { margin: 0; padding: 0; }
+                    html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
+                    iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+                </style>
+            </head>
+            <body>
+                <iframe
+                    src="https://www.youtube.com/embed/$videoId?playsinline=1&autoplay=1&rel=0&modestbranding=1&showinfo=0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen>
+                </iframe>
+            </body>
+            </html>
+        """.trimIndent()
 
-        // Mark as ready after embed loads
+        webView?.loadDataWithBaseURL(
+            "https://www.youtube.com",
+            html,
+            "text/html",
+            "UTF-8",
+            null
+        )
+
+        // Mark as ready after iframe loads
         postDelayed({
             isReady = true
             listener?.onReady()
-        }, 1500)
+        }, 2000)
     }
 
     /**

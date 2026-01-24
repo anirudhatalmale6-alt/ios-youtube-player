@@ -168,19 +168,35 @@ public class YouTubePlayerView: UIView {
         currentVideoId = videoId
         isReady = false
 
-        // Build embed URL with parameters - use youtube-nocookie.com for better WebView compatibility
-        let embedURL = "https://www.youtube-nocookie.com/embed/\(videoId)?playsinline=1&autoplay=1&controls=1&rel=0&modestbranding=1"
+        // Use HTML with iframe - most reliable method for WebViews
+        let html = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+            <style>
+                * { margin: 0; padding: 0; }
+                html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
+                iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+            </style>
+        </head>
+        <body>
+            <iframe
+                src="https://www.youtube.com/embed/\(videoId)?playsinline=1&autoplay=1&rel=0&modestbranding=1&showinfo=0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen>
+            </iframe>
+        </body>
+        </html>
+        """
 
-        if let url = URL(string: embedURL) {
-            let request = URLRequest(url: url)
-            webView.load(request)
+        webView.loadHTMLString(html, baseURL: URL(string: "https://www.youtube.com"))
 
-            // Mark as ready after a short delay (embed doesn't need API callback)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
-                guard let self = self else { return }
-                self.isReady = true
-                self.delegate?.playerReady(self)
-            }
+        // Mark as ready after iframe loads
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
+            guard let self = self else { return }
+            self.isReady = true
+            self.delegate?.playerReady(self)
         }
     }
 
