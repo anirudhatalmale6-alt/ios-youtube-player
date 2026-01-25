@@ -164,37 +164,14 @@ class YouTubePlayerView @JvmOverloads constructor(
         currentVideoId = videoId
         isReady = false
 
-        // Use HTML with iframe - most reliable method for WebViews
-        val html = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-                <style>
-                    * { margin: 0; padding: 0; }
-                    html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
-                    iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
-                </style>
-            </head>
-            <body>
-                <iframe
-                    src="https://www.youtube.com/embed/$videoId?playsinline=1&autoplay=1&rel=0&modestbranding=1&showinfo=0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowfullscreen>
-                </iframe>
-            </body>
-            </html>
-        """.trimIndent()
+        // Load embed URL directly - simplest approach
+        val embedUrl = "https://www.youtube.com/embed/$videoId"
 
-        webView?.loadDataWithBaseURL(
-            "https://www.youtube.com",
-            html,
-            "text/html",
-            "UTF-8",
-            null
-        )
+        // Set mobile user agent for better compatibility
+        webView?.settings?.userAgentString = "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+        webView?.loadUrl(embedUrl)
 
-        // Mark as ready after iframe loads
+        // Mark as ready after page loads
         postDelayed({
             isReady = true
             listener?.onReady()

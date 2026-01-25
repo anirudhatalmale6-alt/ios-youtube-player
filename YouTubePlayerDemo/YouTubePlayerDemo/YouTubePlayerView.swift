@@ -168,31 +168,16 @@ public class YouTubePlayerView: UIView {
         currentVideoId = videoId
         isReady = false
 
-        // Use HTML with iframe - most reliable method for WebViews
-        let html = """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-            <style>
-                * { margin: 0; padding: 0; }
-                html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
-                iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
-            </style>
-        </head>
-        <body>
-            <iframe
-                src="https://www.youtube.com/embed/\(videoId)?playsinline=1&autoplay=1&rel=0&modestbranding=1&showinfo=0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowfullscreen>
-            </iframe>
-        </body>
-        </html>
-        """
+        // Load embed URL directly - simplest approach
+        let embedURLString = "https://www.youtube.com/embed/\(videoId)"
 
-        webView.loadHTMLString(html, baseURL: URL(string: "https://www.youtube.com"))
+        if let url = URL(string: embedURLString) {
+            var request = URLRequest(url: url)
+            request.setValue("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1", forHTTPHeaderField: "User-Agent")
+            webView.load(request)
+        }
 
-        // Mark as ready after iframe loads
+        // Mark as ready after page loads
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
             guard let self = self else { return }
             self.isReady = true
