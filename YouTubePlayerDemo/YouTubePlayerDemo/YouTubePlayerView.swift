@@ -168,21 +168,9 @@ public class YouTubePlayerView: UIView {
         currentVideoId = videoId
         isReady = false
 
-        // Load embed URL directly - simplest approach
-        let embedURLString = "https://www.youtube.com/embed/\(videoId)"
-
-        if let url = URL(string: embedURLString) {
-            var request = URLRequest(url: url)
-            request.setValue("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1", forHTTPHeaderField: "User-Agent")
-            webView.load(request)
-        }
-
-        // Mark as ready after page loads
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
-            guard let self = self else { return }
-            self.isReady = true
-            self.delegate?.playerReady(self)
-        }
+        // Generate and load HTML with YouTube IFrame API
+        let html = generateHTML(videoId: videoId)
+        webView.loadHTMLString(html, baseURL: URL(string: "https://www.youtube.com"))
     }
 
     /// Load a video by full YouTube URL
