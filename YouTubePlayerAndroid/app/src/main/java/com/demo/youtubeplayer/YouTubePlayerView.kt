@@ -327,6 +327,7 @@ class YouTubePlayerView @JvmOverloads constructor(
     }
 
     private fun generateHTML(videoId: String): String {
+        // Use direct iframe embed - works without origin restrictions
         return """
             <!DOCTYPE html>
             <html>
@@ -347,123 +348,58 @@ class YouTubePlayerView @JvmOverloads constructor(
                         background: #000;
                         overflow: hidden;
                     }
-                    #player {
+                    iframe {
                         position: absolute;
                         top: 0;
                         left: 0;
                         width: 100%;
                         height: 100%;
+                        border: none;
                     }
-                    /* HIDE ALL YOUTUBE LOGOS AND BRANDING */
-                    .ytp-watermark, .ytp-watermark-container {
-                        display: none !important;
-                        visibility: hidden !important;
-                        opacity: 0 !important;
-                        pointer-events: none !important;
-                    }
-                    .ytp-youtube-button, .ytp-button[aria-label*="YouTube"],
-                    a[href*="youtube.com"], .ytp-title-link {
-                        display: none !important;
-                        visibility: hidden !important;
-                    }
-                    .ytp-share-button { display: none !important; }
-                    .ytp-watch-later-button { display: none !important; }
-                    .ytp-pause-overlay, .ytp-pause-overlay-container { display: none !important; }
-                    .ytp-endscreen-content, .ytp-endscreen-previous, .ytp-endscreen-next,
-                    .ytp-ce-element, .ytp-ce-covering-overlay { display: none !important; }
-                    .ytp-cards-button, .ytp-cards-teaser { display: none !important; }
-                    .ytp-title, .ytp-title-text, .ytp-title-channel,
-                    .ytp-title-channel-logo, .ytp-chrome-top { display: none !important; }
-                    .ytp-impression-link, .ytp-show-cards-title { display: none !important; }
-                    .ytp-overflow-button { display: none !important; }
-
                     /* Overlay to block logo clicks */
                     #logo-blocker {
                         position: absolute;
                         bottom: 0;
                         right: 0;
-                        width: 120px;
-                        height: 50px;
-                        z-index: 9998;
+                        width: 150px;
+                        height: 60px;
+                        z-index: 9999;
                         background: transparent;
-                        pointer-events: auto;
+                    }
+                    #top-blocker {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 70px;
+                        height: 50px;
+                        z-index: 9999;
+                        background: transparent;
                     }
                 </style>
             </head>
             <body>
-                <div id="player"></div>
+                <iframe
+                    src="https://www.youtube.com/embed/$videoId?playsinline=1&controls=1&showinfo=0&rel=0&modestbranding=1&fs=0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen>
+                </iframe>
                 <div id="logo-blocker"></div>
-                <script src="https://www.youtube.com/iframe_api"></script>
+                <div id="top-blocker"></div>
                 <script>
-                    var player;
-                    var progressInterval;
-
                     // Disable context menu
                     document.addEventListener('contextmenu', function(e) {
                         e.preventDefault();
-                        e.stopPropagation();
                         return false;
                     }, true);
-
                     // Disable selection
                     document.addEventListener('selectstart', function(e) {
                         e.preventDefault();
                         return false;
                     });
-
-                    // Disable copy
-                    document.addEventListener('copy', function(e) {
-                        e.preventDefault();
-                        return false;
-                    });
-
-                    function onYouTubeIframeAPIReady() {
-                        player = new YT.Player('player', {
-                            videoId: '$videoId',
-                            playerVars: {
-                                'playsinline': 1,
-                                'controls': 1,
-                                'showinfo': 0,
-                                'rel': 0,
-                                'modestbranding': 1,
-                                'fs': 0,
-                                'disablekb': 0,
-                                'enablejsapi': 1
-                            },
-                            events: {
-                                'onReady': onPlayerReady,
-                                'onStateChange': onPlayerStateChange,
-                                'onPlaybackQualityChange': onPlaybackQualityChange,
-                                'onError': onPlayerError
-                            }
-                        });
-                    }
-
-                    function onPlayerReady(event) {
-                        AndroidPlayer.onReady();
-                        startProgressTracking();
-                    }
-
-                    function onPlayerStateChange(event) {
-                        AndroidPlayer.onStateChange(event.data);
-                    }
-
-                    function onPlaybackQualityChange(event) {
-                        AndroidPlayer.onPlaybackQualityChange(event.data);
-                    }
-
-                    function onPlayerError(event) {
-                        AndroidPlayer.onError(event.data);
-                    }
-
-                    function startProgressTracking() {
-                        progressInterval = setInterval(function() {
-                            if (player && player.getCurrentTime) {
-                                var time = player.getCurrentTime();
-                                AndroidPlayer.onCurrentTime(time);
-                            }
-                        }, 500);
-                    }
+                    // Notify ready
+                    setTimeout(function() {
+                        try { AndroidPlayer.onReady(); } catch(e) {}
+                    }, 2000);
                 </script>
             </body>
             </html>
