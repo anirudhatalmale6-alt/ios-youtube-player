@@ -164,15 +164,15 @@ class YouTubePlayerView @JvmOverloads constructor(
         currentVideoId = videoId
         isReady = false
 
-        // Generate and load HTML with YouTube IFrame API
-        val html = generateHTML(videoId)
+        // Load YouTube embed URL directly - simplest approach that works
+        val embedUrl = "https://www.youtube.com/embed/$videoId?playsinline=1&controls=1&showinfo=0&rel=0&modestbranding=1"
+        webView?.loadUrl(embedUrl)
 
-        // Encode HTML and load as data URL - works better with YouTube IFrame API
-        val encodedHtml = android.util.Base64.encodeToString(
-            html.toByteArray(Charsets.UTF_8),
-            android.util.Base64.NO_PADDING
-        )
-        webView?.loadData(encodedHtml, "text/html; charset=utf-8", "base64")
+        // Mark as ready after page loads
+        postDelayed({
+            isReady = true
+            listener?.onReady()
+        }, 3000)
     }
 
     /**
