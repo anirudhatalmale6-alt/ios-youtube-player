@@ -166,13 +166,13 @@ class YouTubePlayerView @JvmOverloads constructor(
 
         // Generate and load HTML with YouTube IFrame API
         val html = generateHTML(videoId)
-        webView?.loadDataWithBaseURL(
-            "https://www.youtube.com",
-            html,
-            "text/html",
-            "UTF-8",
-            null
+
+        // Encode HTML and load as data URL - works better with YouTube IFrame API
+        val encodedHtml = android.util.Base64.encodeToString(
+            html.toByteArray(Charsets.UTF_8),
+            android.util.Base64.NO_PADDING
         )
+        webView?.loadData(encodedHtml, "text/html; charset=utf-8", "base64")
     }
 
     /**
